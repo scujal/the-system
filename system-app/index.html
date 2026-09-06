@@ -1,0 +1,2419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The System — Personal Growth RPG</title>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js">
+<script src="react.js"></script>
+<script src="react-dom.js"></script>
+<script src="recharts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.min.js">
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #111118;
+            --bg-panel: rgba(18, 18, 28, 0.85);
+            --bg-panel-hover: rgba(25, 25, 38, 0.95);
+            --border-glow: rgba(100, 100, 180, 0.3);
+            --border-active: rgba(140, 140, 220, 0.6);
+            --text-primary: #e8e8f0;
+            --text-secondary: #a0a0b8;
+            --text-muted: #606078;
+            --accent-blue: #4a80f0;
+            --accent-purple: #7c5cf0;
+            --accent-cyan: #4ac8f0;
+            --accent-gold: #e0b040;
+            --accent-red: #e05050;
+            --accent-green: #40c070;
+            --glow-blue: 0 0 20px rgba(74, 128, 240, 0.3);
+            --glow-purple: 0 0 20px rgba(124, 92, 240, 0.3);
+            --glow-gold: 0 0 20px rgba(224, 176, 64, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .glass-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-glow);
+            border-radius: 12px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: all 0.3s ease;
+        }
+        .glass-panel:hover {
+            border-color: var(--border-active);
+            background: var(--bg-panel-hover);
+        }
+
+        .glass-panel-interactive {
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .glass-panel-interactive:active {
+            transform: scale(0.97);
+        }
+
+        .glow-blue {
+            box-shadow: var(--glow-blue);
+        }
+        .glow-purple {
+            box-shadow: var(--glow-purple);
+        }
+        .glow-gold {
+            box-shadow: var(--glow-gold);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .text-gradient-gold {
+            background: linear-gradient(135deg, #e0b040, #f0d060);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .progress-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .circular-progress {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .circular-progress svg {
+            transform: rotate(-90deg);
+        }
+        .circular-progress circle {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+        }
+        .circular-progress .bg-circle {
+            stroke: rgba(255, 255, 255, 0.08);
+        }
+        .circular-progress .fg-circle {
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-tab {
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+            color: var(--text-muted);
+            white-space: nowrap;
+            user-select: none;
+            border: 1px solid transparent;
+        }
+        .nav-tab:hover {
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .nav-tab.active {
+            color: var(--text-primary);
+            background: rgba(74, 128, 240, 0.15);
+            border-color: var(--border-active);
+            box-shadow: var(--glow-blue);
+        }
+
+        .system-window {
+            border: 1px solid rgba(100, 100, 180, 0.5);
+            border-radius: 10px;
+            background: rgba(10, 10, 16, 0.9);
+            position: relative;
+            overflow: hidden;
+        }
+        .system-window::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(140, 140, 220, 0.6), transparent);
+        }
+        .system-window-header {
+            padding: 8px 14px;
+            border-bottom: 1px solid rgba(100, 100, 180, 0.25);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(74, 128, 240, 0.05);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            letter-spacing: 0.5px;
+            font-size: 13px;
+        }
+        .btn-primary:hover {
+            box-shadow: var(--glow-blue);
+            transform: translateY(-1px);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            border: 1px solid rgba(100, 100, 180, 0.4);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--border-active);
+        }
+
+        .btn-danger {
+            background: rgba(224, 80, 80, 0.15);
+            color: var(--accent-red);
+            border: 1px solid rgba(224, 80, 80, 0.4);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 12px;
+        }
+        .btn-danger:hover {
+            background: rgba(224, 80, 80, 0.25);
+            border-color: rgba(224, 80, 80, 0.6);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="time"],
+        select,
+        textarea {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(100, 100, 180, 0.3);
+            border-radius: 8px;
+            color: var(--text-primary);
+            padding: 8px 12px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 2px rgba(74, 128, 240, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(100, 100, 180, 0.4);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 100, 180, 0.6);
+        }
+
+        @keyframes pulse-glow {
+            0%,
+            100% {
+                box-shadow: 0 0 8px rgba(74, 128, 240, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 24px rgba(74, 128, 240, 0.6);
+            }
+        }
+        .pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .slide-in {
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes glowPulse {
+            0%,
+            100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+        .glow-pulse {
+            animation: glowPulse 1.5s ease-in-out infinite;
+        }
+
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: -0.5px;
+            border: 2px solid;
+            user-select: none;
+        }
+
+        .skill-node {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+            position: relative;
+        }
+        .skill-node:hover {
+            transform: scale(1.15);
+            box-shadow: 0 0 20px rgba(74, 128, 240, 0.5);
+        }
+        .skill-node.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .skill-node.unlocked {
+            border-color: var(--accent-gold);
+            background: rgba(224, 176, 64, 0.15);
+            color: var(--accent-gold);
+            box-shadow: var(--glow-gold);
+        }
+        .skill-node.available {
+            border-color: var(--accent-blue);
+            background: rgba(74, 128, 240, 0.2);
+            color: var(--accent-blue);
+            box-shadow: var(--glow-blue);
+        }
+
+        .combat-text {
+            color: var(--accent-gold);
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 0 0 12px rgba(224, 176, 64, 0.6);
+        }
+
+        @media (max-width: 640px) {
+            .nav-tab {
+                padding: 6px 10px;
+                font-size: 10px;
+            }
+            .glass-panel {
+                border-radius: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const {
+            useState,
+            useEffect,
+            useReducer,
+            useCallback,
+            useMemo,
+            useRef,
+            useContext,
+            createContext
+        } = React;
+        const {
+            LineChart,
+            Line,
+            AreaChart,
+            Area,
+            BarChart,
+            Bar,
+            XAxis,
+            YAxis,
+            CartesianGrid,
+            Tooltip,
+            ResponsiveContainer,
+            RadarChart,
+            Radar,
+            PolarGrid,
+            PolarAngleAxis,
+            PolarRadiusAxis,
+            PieChart,
+            Pie,
+            Cell
+        } = Recharts;
+
+        // ─── CONSTANTS & DEFAULTS ───────────────────────────────────────────
+        const DEFAULT_ATTRIBUTES = [
+            { id: 'str', name: 'STRENGTH', key: 'strength', value: 10, icon: '⚔️', enabled: true },
+            { id: 'int', name: 'INTELLIGENCE', key: 'intelligence', value: 10, icon: '🧠', enabled: true },
+            { id: 'disc', name: 'DISCIPLINE', key: 'discipline', value: 10, icon: '⚡', enabled: true },
+            { id: 'foc', name: 'FOCUS', key: 'focus', value: 10, icon: '🎯', enabled: true },
+            { id: 'knw', name: 'KNOWLEDGE', key: 'knowledge', value: 10, icon: '📖', enabled: true },
+            { id: 'phy', name: 'PHYSICAL', key: 'physical', value: 10, icon: '💪', enabled: true },
+            { id: 'soc', name: 'SOCIAL', key: 'social', value: 10, icon: '🤝', enabled: true },
+            { id: 'res', name: 'RESILIENCE', key: 'resilience', value: 10, icon: '🛡️', enabled: true },
+        ];
+
+        const DEFAULT_RANKS = [
+            { rank: 'E', minLevel: 1, maxLevel: 5, color: '#8a8a9a' },
+            { rank: 'D', minLevel: 6, maxLevel: 10, color: '#4ac870' },
+            { rank: 'C', minLevel: 11, maxLevel: 20, color: '#4ac8f0' },
+            { rank: 'B', minLevel: 21, maxLevel: 35, color: '#7c5cf0' },
+            { rank: 'A', minLevel: 36, maxLevel: 50, color: '#e0b040' },
+            { rank: 'S', minLevel: 51, maxLevel: 75, color: '#e08040' },
+            { rank: 'SS', minLevel: 76, maxLevel: 100, color: '#e05050' },
+            { rank: 'SSS', minLevel: 101, maxLevel: 999, color: '#f0e040' },
+        ];
+
+        const DEFAULT_QUESTS = [
+            { id: 'dq1', type: 'daily', title: 'Deep work session', difficulty: 'normal', xpReward: 25,
+                attributeRewards: [{ key: 'focus', amount: 12 }, { key: 'discipline', amount: 8 }],
+                domain: 'career', completed: false, streak: 0, bestStreak: 0, deadline: 'today',
+                createdAt: Date.now() },
+            { id: 'dq2', type: 'daily', title: 'Read 20 pages', difficulty: 'easy', xpReward: 10,
+                attributeRewards: [{ key: 'intelligence', amount: 8 }, { key: 'knowledge', amount: 10 }],
+                domain: 'mind', completed: false, streak: 0, bestStreak: 0, deadline: 'today',
+            createdAt: Date.now() },
+            { id: 'dq3', type: 'daily', title: 'Exercise 30 min', difficulty: 'normal', xpReward: 25,
+                attributeRewards: [{ key: 'physical', amount: 15 }, { key: 'resilience', amount: 5 }],
+                domain: 'body', completed: false, streak: 0, bestStreak: 0, deadline: 'today',
+            createdAt: Date.now() },
+            { id: 'dq4', type: 'daily', title: 'Meditate 10 min', difficulty: 'easy', xpReward: 10,
+                attributeRewards: [{ key: 'focus', amount: 10 }, { key: 'resilience', amount: 5 }],
+                domain: 'spirit', completed: false, streak: 0, bestStreak: 0, deadline: 'today',
+            createdAt: Date.now() },
+            { id: 'dq5', type: 'daily', title: 'Plan tomorrow', difficulty: 'easy', xpReward: 10,
+                attributeRewards: [{ key: 'discipline', amount: 8 }, { key: 'focus', amount: 3 }],
+                domain: 'discipline', completed: false, streak: 0, bestStreak: 0, deadline: 'today',
+            createdAt: Date.now() },
+        ];
+
+        const DEFAULT_ACHIEVEMENTS = [
+            { id: 'ach1', name: 'FIRST BLOOD', description: 'Complete your first quest', icon: '🗡️',
+                unlocked: false, condition: (state) => state.totalQuestsCompleted >= 1 },
+            { id: 'ach2', name: 'AWAKENED', description: 'Reach Level 5', icon: '⚡', unlocked: false,
+                condition: (state) => state.level >= 5 },
+            { id: 'ach3', name: 'DISCIPLINED', description: 'Complete 7 consecutive days', icon: '📅',
+                unlocked: false, condition: (state) => state.bestStreak >= 7 },
+            { id: 'ach4', name: 'UNBREAKABLE', description: 'Complete 30 consecutive days', icon: '🛡️',
+                unlocked: false, condition: (state) => state.bestStreak >= 30 },
+            { id: 'ach5', name: 'GRINDER', description: 'Earn 1,000 total XP', icon: '💎', unlocked: false,
+                condition: (state) => state.totalXp >= 1000 },
+            { id: 'ach6', name: 'ELITE', description: 'Reach A Rank', icon: '🏆', unlocked: false,
+                condition: (state) => ['A', 'S', 'SS', 'SSS'].includes(state.rank) },
+            { id: 'ach7', name: 'MONARCH', description: 'Reach S Rank', icon: '👑', unlocked: false,
+                condition: (state) => ['S', 'SS', 'SSS'].includes(state.rank) },
+            { id: 'ach8', name: 'BOSS SLAYER', description: 'Defeat your first personal boss', icon: '⚔️',
+                unlocked: false, condition: (state) => state.bossesDefeated >= 1 },
+            { id: 'ach9', name: 'OVERDRIVE', description: 'Complete 100% of daily quests for 7 days', icon: '🚀',
+                unlocked: false, condition: (state) => state.perfectDays >= 7 },
+            { id: 'ach10', name: 'COMEBACK', description: 'Recover after breaking a 30+ day streak', icon: '🔄',
+                unlocked: false, condition: (state) => state.comebacks >= 1 },
+        ];
+
+        const DEFAULT_TITLES = [
+            { id: 't1', name: 'The Beginner', unlocked: true, description: 'Start your journey' },
+            { id: 't2', name: 'The Disciplined', unlocked: false, description: 'Reach 7-day streak' },
+            { id: 't3', name: 'The Scholar', unlocked: false, description: 'Reach 50 Intelligence' },
+            { id: 't4', name: 'The Grinder', unlocked: false, description: 'Earn 5,000 XP' },
+            { id: 't5', name: 'The Unbreakable', unlocked: false, description: '30-day streak' },
+            { id: 't6', name: 'The Elite', unlocked: false, description: 'Reach A Rank' },
+            { id: 't7', name: 'The Monarch', unlocked: false, description: 'Reach S Rank' },
+        ];
+
+        const DEFAULT_SKILL_TREE = [
+            { id: 's1', name: 'FOCUS I', tree: 'discipline', tier: 1, reqXp: 100, unlocked: false,
+                description: '+5% XP from focus tasks', effect: { xpMultiplier: 0.05 } },
+            { id: 's2', name: 'FOCUS II', tree: 'discipline', tier: 2, reqXp: 250, unlocked: false,
+                description: '+10% XP from focus tasks', effect: { xpMultiplier: 0.10 }, prereq: 's1' },
+            { id: 's3', name: 'DEEP WORK', tree: 'discipline', tier: 3, reqXp: 500, unlocked: false,
+                description: '+20% XP on hard quests', effect: { hardXpBoost: 0.20 }, prereq: 's2' },
+            { id: 's4', name: 'READING I', tree: 'knowledge', tier: 1, reqXp: 100, unlocked: false,
+                description: '+10% knowledge gains', effect: { knowledgeBoost: 0.10 } },
+            { id: 's5', name: 'LEARNING II', tree: 'knowledge', tier: 2, reqXp: 250, unlocked: false,
+                description: '+15% intelligence gains', effect: { intBoost: 0.15 }, prereq: 's4' },
+            { id: 's6', name: 'RECALL', tree: 'knowledge', tier: 3, reqXp: 500, unlocked: false,
+                description: 'Bonus XP on review tasks', effect: { reviewBonus: true }, prereq: 's5' },
+            { id: 's7', name: 'MOBILITY', tree: 'physical', tier: 1, reqXp: 100, unlocked: false,
+                description: '+10% physical gains', effect: { physicalBoost: 0.10 } },
+            { id: 's8', name: 'STRENGTH', tree: 'physical', tier: 2, reqXp: 250, unlocked: false,
+                description: '+15% physical gains', effect: { physicalBoost: 0.15 }, prereq: 's7' },
+            { id: 's9', name: 'ENDURANCE', tree: 'physical', tier: 3, reqXp: 500, unlocked: false,
+                description: 'Extra streak resilience', effect: { streakShield: true }, prereq: 's8' },
+        ];
+
+        const DEFAULT_BOSSES = [
+            { id: 'boss1', name: 'THE PROCRASTINATOR', hp: 100, maxHp: 100, icon: '😈',
+                description: 'Avoiding difficult tasks', weakness: 'Complete a task you\'ve been avoiding', defeated: false,
+                totalDefeats: 0 },
+            { id: 'boss2', name: 'THE DOOMSCROLLER', hp: 100, maxHp: 100, icon: '📱',
+                description: 'Mindless scrolling', weakness: 'Go 4 hours without social media', defeated: false,
+                totalDefeats: 0 },
+            { id: 'boss3', name: 'THE OVERTHINKER', hp: 100, maxHp: 100, icon: '🌀', description: 'Analysis paralysis',
+                weakness: 'Make 3 decisions without overthinking', defeated: false, totalDefeats: 0 },
+        ];
+
+        const DEFAULT_DOMAINS = [
+            { id: 'mind', name: 'MIND', icon: '🧠', color: '#4ac8f0' },
+            { id: 'body', name: 'BODY', icon: '💪', color: '#e08040' },
+            { id: 'discipline', name: 'DISCIPLINE', icon: '⚡', color: '#e0b040' },
+            { id: 'career', name: 'CAREER', icon: '💼', color: '#7c5cf0' },
+            { id: 'relationships', name: 'RELATIONSHIPS', icon: '🤝', color: '#e05080' },
+            { id: 'finance', name: 'FINANCE', icon: '💰', color: '#40c070' },
+            { id: 'spirit', name: 'SPIRIT', icon: '🕊️', color: '#4a80f0' },
+        ];
+
+        const XP_FOR_LEVEL = (level, baseXp = 100, growthFactor = 1.15) => {
+            return Math.round(baseXp * Math.pow(growthFactor, level - 1));
+        };
+
+        const getXpForNextLevel = (level, baseXp = 100, growthFactor = 1.15) => {
+            return XP_FOR_LEVEL(level, baseXp, growthFactor);
+        };
+
+        const getRankForLevel = (level, ranks = DEFAULT_RANKS) => {
+            for (let r of ranks) {
+                if (level >= r.minLevel && level <= r.maxLevel) return r.rank;
+            }
+            return 'E';
+        };
+
+        const getRankColor = (rank, ranks = DEFAULT_RANKS) => {
+            const found = ranks.find(r => r.rank === rank);
+            return found ? found.color : '#8a8a9a';
+        };
+
+        const getDifficultyXp = (difficulty) => {
+            const map = { trivial: 5, easy: 10, normal: 25, hard: 50, elite: 100, boss: 250 };
+            return map[difficulty] || 25;
+        };
+
+        const getDifficultyLabel = (difficulty) => {
+            const map = { trivial: 'TRIVIAL', easy: 'EASY', normal: 'NORMAL', hard: 'HARD', elite: 'ELITE',
+                boss: 'BOSS' };
+            return map[difficulty] || 'NORMAL';
+        };
+
+        const getDifficultyColor = (difficulty) => {
+            const map = { trivial: '#8a8a9a', easy: '#40c070', normal: '#4ac8f0', hard: '#e0b040', elite: '#e08040',
+                boss: '#e05050' };
+            return map[difficulty] || '#4ac8f0';
+        };
+
+        // ─── STATE MANAGEMENT ──────────────────────────────────────────────
+        const initialState = {
+            initialized: false,
+            playerName: '',
+            mission: '',
+            level: 1,
+            rank: 'E',
+            currentXp: 0,
+            totalXp: 0,
+            lifetimeXp: 0,
+            streak: 0,
+            bestStreak: 0,
+            currentStreak: 0,
+            totalQuestsCompleted: 0,
+            perfectDays: 0,
+            bossesDefeated: 0,
+            comebacks: 0,
+            attributePoints: 0,
+            skillPoints: 0,
+            equippedTitle: 'The Beginner',
+            attributes: [...DEFAULT_ATTRIBUTES],
+            ranks: [...DEFAULT_RANKS],
+            quests: [...DEFAULT_QUESTS],
+            achievements: [...DEFAULT_ACHIEVEMENTS],
+            titles: [...DEFAULT_TITLES],
+            skillTree: [...DEFAULT_SKILL_TREE],
+            bosses: [...DEFAULT_BOSSES],
+            domains: [...DEFAULT_DOMAINS],
+            xpTransactions: [],
+            focusSessions: [],
+            dailyReviews: [],
+            systemLog: [],
+            activeTab: 'home',
+            onboardingStep: 0,
+            showOnboarding: true,
+            showLevelUpModal: false,
+            showRankUpModal: false,
+            lastLevelUp: null,
+            lastRankUp: null,
+            comboCount: 0,
+            comboTimer: null,
+            energyLevel: 80,
+            dailyScore: 0,
+            dailyGrade: 'C',
+            yesterdayScore: null,
+            yesterdayGrade: null,
+            settings: {
+                baseXp: 100,
+                growthFactor: 1.15,
+                xpMultiplier: 1.0,
+                decayEnabled: false,
+                flavorText: true,
+                comboEnabled: true,
+            },
+            lastDailyReset: null,
+            lastWeeklyReview: null,
+            lastMonthlyReview: null,
+        };
+
+        function appReducer(state, action) {
+            switch (action.type) {
+                case 'LOAD_STATE':
+                    return { ...state, ...action.payload, initialized: true };
+                case 'RESET_STATE':
+                    return { ...initialState, initialized: true };
+                case 'SET_TAB':
+                    return { ...state, activeTab: action.payload };
+                case 'SET_ONBOARDING_STEP':
+                    return { ...state, onboardingStep: action.payload };
+                case 'SHOW_ONBOARDING':
+                    return { ...state, showOnboarding: action.payload };
+                case 'COMPLETE_ONBOARDING':
+                    return { ...state, showOnboarding: false, initialized: true, onboardingStep: 0 };
+                case 'SET_PLAYER_INFO':
+                    return { ...state, ...action.payload };
+                case 'COMPLETE_QUEST':
+                    return completeQuest(state, action.payload);
+                case 'ADD_XP':
+                    return addXp(state, action.payload);
+                case 'LEVEL_UP':
+                    return levelUp(state);
+                case 'ADD_ATTRIBUTE_POINT':
+                    return { ...state, attributePoints: state.attributePoints + action.payload };
+                case 'ALLOCATE_ATTRIBUTE':
+                    return allocateAttribute(state, action.payload);
+                case 'ADD_SKILL_POINT':
+                    return { ...state, skillPoints: state.skillPoints + action.payload };
+                case 'UNLOCK_SKILL':
+                    return unlockSkill(state, action.payload);
+                case 'ADD_QUEST':
+                    return { ...state, quests: [...state.quests, action.payload] };
+                case 'REMOVE_QUEST':
+                    return { ...state, quests: state.quests.filter(q => q.id !== action.payload) };
+                case 'DEFEAT_BOSS_PROGRESS':
+                    return defeatBossProgress(state, action.payload);
+                case 'BOSS_DEFEATED':
+                    return bossDefeated(state, action.payload);
+                case 'ADD_FOCUS_SESSION':
+                    return addFocusSession(state, action.payload);
+                case 'ADD_DAILY_REVIEW':
+                    return { ...state, dailyReviews: [...state.dailyReviews, action.payload] };
+                case 'UPDATE_DAILY_SCORE':
+                    return { ...state, dailyScore: action.payload.score, dailyGrade: action.payload.grade };
+                case 'SET_YESTERDAY':
+                    return { ...state, yesterdayScore: action.payload.score, yesterdayGrade: action.payload.grade };
+                case 'ADD_LOG_ENTRY':
+                    return { ...state, systemLog: [{ timestamp: Date.now(), message: action.payload },
+                        ...state.systemLog].slice(0, 200) };
+                case 'CHECK_ACHIEVEMENTS':
+                    return checkAchievements(state);
+                case 'UNLOCK_TITLE':
+                    return { ...state, titles: state.titles.map(t => t.id === action.payload ? { ...t,
+                            unlocked: true } : t) };
+                case 'EQUIP_TITLE':
+                    return { ...state, equippedTitle: action.payload };
+                case 'UPDATE_SETTINGS':
+                    return { ...state, settings: { ...state.settings, ...action.payload } };
+                case 'UPDATE_COMBO':
+                    return { ...state, comboCount: action.payload };
+                case 'UPDATE_ENERGY':
+                    return { ...state, energyLevel: action.payload };
+                case 'DAILY_RESET':
+                    return dailyReset(state);
+                case 'UPDATE_BOSS_HP':
+                    return { ...state, bosses: state.bosses.map(b => b.id === action.payload.id ? { ...b,
+                            hp: action.payload.hp } : b) };
+                case 'UPDATE_ATTRIBUTES':
+                    return { ...state, attributes: action.payload };
+                case 'ADD_ATTRIBUTE':
+                    return { ...state, attributes: [...state.attributes, action.payload] };
+                case 'REMOVE_ATTRIBUTE':
+                    return { ...state, attributes: state.attributes.filter(a => a.id !== action.payload) };
+                case 'STREAK_MILESTONE':
+                    return { ...state, lastStreakMilestone: action.payload };
+                default:
+                    return state;
+            }
+        }
+
+        function completeQuest(state, questId) {
+            const quest = state.quests.find(q => q.id === questId);
+            if (!quest || quest.completed) return state;
+
+            let xpMultiplier = state.settings.xpMultiplier || 1.0;
+            // Combo bonus
+            const comboBonus = state.comboCount >= 8 ? 0.3 : state.comboCount >= 5 ? 0.2 : state.comboCount >=
+                3 ? 0.1 : 0;
+
+            const baseXp = quest.xpReward || getDifficultyXp(quest.difficulty);
+            const totalXp = Math.round(baseXp * xpMultiplier * (1 + comboBonus));
+
+            // Skill tree bonuses
+            let skillBonus = 0;
+            state.skillTree.filter(s => s.unlocked).forEach(skill => {
+                if (skill.effect?.xpMultiplier) skillBonus += skill.effect.xpMultiplier;
+                if (skill.effect?.hardXpBoost && quest.difficulty === 'hard') skillBonus += skill.effect
+                    .hardXpBoost;
+            });
+            const finalXp = Math.round(totalXp * (1 + skillBonus));
+
+            const newAttributes = [...state.attributes];
+            if (quest.attributeRewards) {
+                quest.attributeRewards.forEach(ar => {
+                    const attr = newAttributes.find(a => a.key === ar.key || a.id === ar.key);
+                    if (attr) attr.value += ar.amount;
+                });
+            }
+
+            const newQuests = state.quests.map(q =>
+                q.id === questId ? { ...q, completed: true, completedAt: Date.now() } : q
+            );
+
+            const newStreak = (state.streak || 0) + 1;
+            const newBestStreak = Math.max(state.bestStreak || 0, newStreak);
+            const newTotalCompleted = state.totalQuestsCompleted + 1;
+
+            // Check for perfect day
+            const dailyQuests = newQuests.filter(q => q.type === 'daily');
+            const allCompleted = dailyQuests.length > 0 && dailyQuests.every(q => q.completed);
+            const newPerfectDays = allCompleted ? state.perfectDays + 1 : state.perfectDays;
+
+            let xpTransactions = [...state.xpTransactions, {
+                id: Date.now() + Math.random(),
+                timestamp: Date.now(),
+                questId: questId,
+                questTitle: quest.title,
+                xpGained: finalXp,
+                type: 'quest_completion',
+                attributesGained: quest.attributeRewards || [],
+            }];
+
+            // Level up check
+            const xpNeeded = getXpForNextLevel(state.level, state.settings.baseXp, state.settings.growthFactor);
+            let newXp = state.currentXp + finalXp;
+            let newLevel = state.level;
+            let newRank = state.rank;
+            let rankUp = false;
+            let leveledUp = false;
+            let attributePointsGained = 0;
+            let skillPointsGained = 0;
+
+            while (newXp >= xpNeeded) {
+                newXp -= xpNeeded;
+                newLevel += 1;
+                leveledUp = true;
+                attributePointsGained += 1;
+                skillPointsGained += 1;
+                const r = getRankForLevel(newLevel, state.ranks);
+                if (r !== newRank) {
+                    newRank = r;
+                    rankUp = true;
+                }
+            }
+
+            const totalXp = state.totalXp + finalXp;
+            const lifetimeXp = state.lifetimeXp + finalXp;
+
+            return {
+                ...state,
+                currentXp: newXp,
+                totalXp: totalXp,
+                lifetimeXp: lifetimeXp,
+                level: newLevel,
+                rank: newRank,
+                streak: newStreak,
+                bestStreak: newBestStreak,
+                totalQuestsCompleted: newTotalCompleted,
+                perfectDays: newPerfectDays,
+                attributes: newAttributes,
+                quests: newQuests,
+                xpTransactions: xpTransactions,
+                attributePoints: state.attributePoints + attributePointsGained,
+                skillPoints: state.skillPoints + skillPointsGained,
+                comboCount: state.comboCount + 1,
+                showLevelUpModal: leveledUp || state.showLevelUpModal,
+                showRankUpModal: rankUp || state.showRankUpModal,
+                lastLevelUp: leveledUp ? { from: newLevel - 1, to: newLevel } : state.lastLevelUp,
+                lastRankUp: rankUp ? { from: state.rank, to: newRank } : state.lastRankUp,
+                systemLog: [{
+                    timestamp: Date.now(),
+                    message: `Quest "${quest.title}" completed. +${finalXp} XP${leveledUp ? '. LEVEL UP!' : ''}`
+                }, ...state.systemLog].slice(0, 200),
+            };
+        }
+
+        function addXp(state, { amount, source, attributeGains = [] }) {
+            const xpMultiplier = state.settings.xpMultiplier || 1.0;
+            const finalXp = Math.round(amount * xpMultiplier);
+
+            let xpNeeded = getXpForNextLevel(state.level, state.settings.baseXp, state.settings.growthFactor);
+            let newXp = state.currentXp + finalXp;
+            let newLevel = state.level;
+            let newRank = state.rank;
+            let rankUp = false;
+            let leveledUp = false;
+            let attrPoints = 0;
+            let skillPoints = 0;
+
+            while (newXp >= xpNeeded) {
+                newXp -= xpNeeded;
+                newLevel += 1;
+                leveledUp = true;
+                attrPoints += 1;
+                skillPoints += 1;
+                const r = getRankForLevel(newLevel, state.ranks);
+                if (r !== newRank) {
+                    newRank = r;
+                    rankUp = true;
+                }
+            }
+
+            const newAttributes = [...state.attributes];
+            attributeGains.forEach(ag => {
+                const attr = newAttributes.find(a => a.key === ag.key || a.id === ag.key);
+                if (attr) attr.value += ag.amount;
+            });
+
+            return {
+                ...state,
+                currentXp: newXp,
+                totalXp: state.totalXp + finalXp,
+                lifetimeXp: state.lifetimeXp + finalXp,
+                level: newLevel,
+                rank: newRank,
+                attributes: newAttributes,
+                attributePoints: state.attributePoints + attrPoints,
+                skillPoints: state.skillPoints + skillPoints,
+                showLevelUpModal: leveledUp || state.showLevelUpModal,
+                showRankUpModal: rankUp || state.showRankUpModal,
+                lastLevelUp: leveledUp ? { from: newLevel - 1, to: newLevel } : state.lastLevelUp,
+                lastRankUp: rankUp ? { from: state.rank, to: newRank } : state.lastRankUp,
+                xpTransactions: [...state.xpTransactions, {
+                    id: Date.now() + Math.random(),
+                    timestamp: Date.now(),
+                    xpGained: finalXp,
+                    type: source || 'generic',
+                    attributesGained: attributeGains,
+                }],
+                systemLog: [{
+                    timestamp: Date.now(),
+                    message: `+${finalXp} XP${leveledUp ? ' (LEVEL UP!)' : ''}`
+                }, ...state.systemLog].slice(0, 200),
+            };
+        }
+
+        function levelUp(state) {
+            return state;
+        }
+
+        function allocateAttribute(state, { attrId, points }) {
+            const attr = state.attributes.find(a => a.id === attrId);
+            if (!attr || state.attributePoints < points) return state;
+            return {
+                ...state,
+                attributes: state.attributes.map(a => a.id === attrId ? { ...a, value: a.value + points } : a),
+                attributePoints: state.attributePoints - points,
+                systemLog: [{ timestamp: Date.now(), message: `+${points} allocated to ${attr.name}` },
+                    ...state.systemLog
+                ].slice(0, 200),
+            };
+        }
+
+        function unlockSkill(state, skillId) {
+            const skill = state.skillTree.find(s => s.id === skillId);
+            if (!skill || skill.unlocked) return state;
+            // Check prereq
+            if (skill.prereq) {
+                const prereq = state.skillTree.find(s => s.id === skill.prereq);
+                if (!prereq || !prereq.unlocked) return state;
+            }
+            if (state.skillPoints < 1) return state;
+            return {
+                ...state,
+                skillTree: state.skillTree.map(s => s.id === skillId ? { ...s, unlocked: true } : s),
+                skillPoints: state.skillPoints - 1,
+                systemLog: [{ timestamp: Date.now(), message: `Skill unlocked: ${skill.name}` }, ...state
+                        .systemLog
+                    ].slice(0, 200),
+            };
+        }
+
+        function defeatBossProgress(state, { bossId, damage }) {
+            const boss = state.bosses.find(b => b.id === bossId);
+            if (!boss || boss.defeated) return state;
+            const newHp = Math.max(0, boss.hp - damage);
+            let defeated = newHp <= 0;
+            let bossesDefeated = state.bossesDefeated;
+            let xpGained = defeated ? 100 : Math.round(damage * 0.5);
+
+            if (defeated) bossesDefeated += 1;
+
+            let newState = {
+                ...state,
+                bosses: state.bosses.map(b =>
+                    b.id === bossId ? { ...b, hp: newHp, defeated, totalDefeats: defeated ? b.totalDefeats +
+                            1 : b.totalDefeats } : b
+                ),
+                bossesDefeated,
+                systemLog: [{
+                    timestamp: Date.now(),
+                    message: defeated ? `BOSS DEFEATED: ${boss.name}! +${xpGained} XP` :
+                        `${boss.name} HP: ${boss.hp} → ${newHp}. +${xpGained} XP`
+                }, ...state.systemLog].slice(0, 200),
+            };
+
+            if (xpGained > 0) {
+                newState = addXp(newState, { amount: xpGained, source: 'boss_damage', attributeGains: [{ key: 'discipline',
+                        amount: 5 }] });
+            }
+
+            return newState;
+        }
+
+        function bossDefeated(state, bossId) {
+            return { ...state, bossesDefeated: state.bossesDefeated + 1 };
+        }
+
+        function addFocusSession(state, { duration, xpEarned, focusGained, disciplineGained }) {
+            const session = { id: Date.now() + Math.random(), timestamp: Date.now(), duration, xpEarned,
+                focusGained, disciplineGained };
+            let newState = {
+                ...state,
+                focusSessions: [...state.focusSessions, session],
+                systemLog: [{
+                    timestamp: Date.now(),
+                    message: `Focus session: ${duration} min. +${xpEarned} XP`
+                }, ...state.systemLog].slice(0, 200),
+            };
+            newState = addXp(newState, {
+                amount: xpEarned,
+                source: 'focus_session',
+                attributeGains: [
+                    { key: 'focus', amount: focusGained },
+                    { key: 'discipline', amount: disciplineGained },
+                ],
+            });
+            return newState;
+        }
+
+        function checkAchievements(state) {
+            const unlockedIds = new Set(state.achievements.filter(a => a.unlocked).map(a => a.id));
+            let changed = false;
+            const newAchievements = state.achievements.map(ach => {
+                if (!ach.unlocked && ach.condition(state)) {
+                    changed = true;
+                    return { ...ach, unlocked: true };
+                }
+                return ach;
+            });
+            if (!changed) return state;
+            const newlyUnlocked = newAchievements.filter(a => !unlockedIds.has(a.id) && a.unlocked);
+            return {
+                ...state,
+                achievements: newAchievements,
+                systemLog: [...newlyUnlocked.map(a => ({ timestamp: Date.now(), message: `ACHIEVEMENT: ${a.name} unlocked!` })),
+                    ...state.systemLog
+                ].slice(0, 200),
+            };
+        }
+
+        function dailyReset(state) {
+            const today = new Date().toDateString();
+            if (state.lastDailyReset === today) return state;
+
+            const yesterdayScore = state.dailyScore;
+            const yesterdayGrade = state.dailyGrade;
+
+            // Reset daily quests
+            const resetQuests = state.quests.map(q =>
+                q.type === 'daily' ? { ...q, completed: false, completedAt: null } : q
+            );
+
+            return {
+                ...state,
+                quests: resetQuests,
+                lastDailyReset: today,
+                comboCount: 0,
+                dailyScore: 0,
+                dailyGrade: 'C',
+                yesterdayScore,
+                yesterdayGrade,
+                energyLevel: 80,
+            };
+        }
+
+        // ─── CONTEXT ────────────────────────────────────────────────────────
+        const AppContext = createContext(null);
+
+        // ─── HELPER HOOKS ───────────────────────────────────────────────────
+        function useAppState() {
+            const context = useContext(AppContext);
+            if (!context) throw new Error('useAppState must be used within AppProvider');
+            return context;
+        }
+
+        function useLocalStorage(key, initialValue) {
+            const [stored, setStored] = useState(() => {
+                try {
+                    const item = localStorage.getItem(key);
+                    return item ? JSON.parse(item) : initialValue;
+                } catch {
+                    return initialValue;
+                }
+            });
+
+            useEffect(() => {
+                try {
+                    localStorage.setItem(key, JSON.stringify(stored));
+                } catch {}
+            }, [key, stored]);
+
+            return [stored, setStored];
+        }
+
+        // ─── COMPONENTS ─────────────────────────────────────────────────────
+        function CircularProgress({ value, max, size = 60, strokeWidth = 6, color = '#4a80f0', label }) {
+            const radius = (size - strokeWidth) / 2;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (value / max) * circumference;
+            return (
+                <div className="circular-progress" style={{ width: size, height: size }}>
+                    <svg width={size} height={size}>
+                        <circle className="bg-circle" cx={size/2} cy={size/2} r={radius} strokeWidth={strokeWidth}/>
+                        <circle className="fg-circle" cx={size/2} cy={size/2} r={radius} strokeWidth={strokeWidth}
+                            stroke={color} strokeDasharray={circumference} strokeDashoffset={offset}/>
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center text-xs font-bold font-mono" style={{color}}>
+                        {label || `${Math.round((value/max)*100)}%`}
+                    </div>
+                </div>
+            );
+        }
+
+        function RankBadge({ rank, size = 36, colors }) {
+            const color = getRankColor(rank, colors);
+            return (
+                <div className="rank-badge" style={{ width: size, height: size, fontSize: size * 0.5, borderColor: color, color, boxShadow: `0 0 ${size/2}px ${color}40` }}>
+                    {rank}
+                </div>
+            );
+        }
+
+        function ProgressBar({ value, max, color = '#4a80f0', height = 6, showLabel = false, label }) {
+            const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
+            return (
+                <div>
+                    <div className="progress-bar" style={{ height }}>
+                        <div className="progress-bar-fill" style={{ width: `${pct}%`, background: color }} />
+                    </div>
+                    {showLabel && (
+                        <div className="flex justify-between mt-1 text-[10px] font-mono text-[#606078]">
+                            <span>{label || ''}</span>
+                            <span>{value.toLocaleString()} / {max.toLocaleString()}</span>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function SystemWindow({ title, children, icon, className = '' }) {
+            return (
+                <div className={`system-window ${className}`}>
+                    <div className="system-window-header">
+                        <span className="flex items-center gap-2">
+                            {icon && <span>{icon}</span>}
+                            {title}
+                        </span>
+                        <span className="text-[9px] text-[#606078]">▓</span>
+                    </div>
+                    <div className="p-4">
+                        {children}
+                    </div>
+                </div>
+            );
+        }
+
+        function Modal({ children, onClose, title, icon }) {
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)' }}>
+                    <div className="glass-panel p-6 max-w-md w-full fade-in" style={{ borderColor: 'rgba(140,140,220,0.5)', boxShadow: '0 0 60px rgba(74,128,240,0.2)' }}>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-sm font-bold tracking-wider text-[#e8e8f0] flex items-center gap-2">
+                                {icon && <span className="text-lg">{icon}</span>}
+                                {title}
+                            </h2>
+                            <button onClick={onClose} className="text-[#606078] hover:text-[#e8e8f0] transition-colors text-xl leading-none">×</button>
+                        </div>
+                        {children}
+                    </div>
+                </div>
+            );
+        }
+
+        // ─── ONBOARDING ────────────────────────────────────────────────────
+        function Onboarding({ state, dispatch }) {
+            const [step, setStep] = useState(0);
+            const [name, setName] = useState('');
+            const [mission, setMission] = useState('');
+            const [selectedDomains, setSelectedDomains] = useState(['mind', 'body', 'discipline']);
+
+            const steps = ['Initialize', 'Identity', 'Mission', 'Domains', 'Ready'];
+
+            const handleNext = () => {
+                if (step === 0) setStep(1);
+                else if (step === 1 && name.trim()) setStep(2);
+                else if (step === 2) setStep(3);
+                else if (step === 3) setStep(4);
+                else if (step === 4) {
+                    dispatch({ type: 'SET_PLAYER_INFO', payload: { playerName: name, mission: mission || 'Become the strongest version of myself' } });
+                    dispatch({ type: 'COMPLETE_ONBOARDING' });
+                    dispatch({ type: 'ADD_LOG_ENTRY', payload: 'SYSTEM INITIALIZATION COMPLETE. CHARACTER CREATED.' });
+                }
+            };
+
+            const toggleDomain = (domainId) => {
+                setSelectedDomains(prev =>
+                    prev.includes(domainId) ? prev.filter(d => d !== domainId) : [...prev, domainId]
+                );
+            };
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a0a0f] p-4">
+                    <div className="max-w-lg w-full space-y-6">
+                        {/* Header */}
+                        <div className="text-center space-y-2">
+                            <div className="font-mono text-xs tracking-[0.3em] text-[#4a80f0] animate-pulse">SYSTEM INITIALIZING...</div>
+                            {step > 0 && <div className="font-mono text-xs tracking-[0.2em] text-[#e0b040]">PLAYER DETECTED</div>}
+                            {step > 1 && <div className="font-mono text-xs tracking-[0.2em] text-[#7c5cf0]">CHARACTER CREATION REQUIRED</div>}
+                        </div>
+
+                        {/* Progress dots */}
+                        <div className="flex justify-center gap-2">
+                            {steps.map((s, i) => (
+                                <div key={i} className={`w-2 h-2 rounded-full transition-all ${i <= step ? 'bg-[#4a80f0]' : 'bg-[#22222e]'}`} />
+                            ))}
+                        </div>
+
+                        {/* Content */}
+                        <div className="glass-panel p-6 min-h-[200px]">
+                            {step === 0 && (
+                                <div className="text-center space-y-6 py-6">
+                                    <div className="text-5xl mb-4">🔮</div>
+                                    <div className="font-mono text-sm text-[#a0a0b8] leading-relaxed">
+                                        You are not managing tasks.<br/>You are building your character.
+                                    </div>
+                                    <div className="font-mono text-xs text-[#606078]">Every action will be measured. Progression will be quantified.</div>
+                                </div>
+                            )}
+                            {step === 1 && (
+                                <div className="space-y-4">
+                                    <label className="block">
+                                        <span className="font-mono text-xs text-[#a0a0b8] tracking-wider">WHO ARE YOU, PLAYER?</span>
+                                        <input type="text" value={name} onChange={e => setName(e.target.value)}
+                                            placeholder="Enter your name..." className="mt-2 text-lg" autoFocus />
+                                    </label>
+                                </div>
+                            )}
+                            {step === 2 && (
+                                <div className="space-y-4">
+                                    <label className="block">
+                                        <span className="font-mono text-xs text-[#a0a0b8] tracking-wider">WHY ARE YOU DOING THIS? (OPTIONAL)</span>
+                                        <input type="text" value={mission} onChange={e => setMission(e.target.value)}
+                                            placeholder="Your mission statement..." className="mt-2" />
+                                    </label>
+                                    <div className="font-mono text-xs text-[#606078]">
+                                        This becomes your central purpose. Displayed throughout your journey.
+                                    </div>
+                                </div>
+                            )}
+                            {step === 3 && (
+                                <div className="space-y-3">
+                                    <span className="font-mono text-xs text-[#a0a0b8] tracking-wider">SELECT YOUR PRIMARY DOMAINS</span>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {state.domains.map(d => (
+                                            <button key={d.id} onClick={() => toggleDomain(d.id)}
+                                                className={`p-3 rounded-lg border transition-all ${selectedDomains.includes(d.id) ? 'border-[#4a80f0] bg-[#4a80f015] text-[#e8e8f0]' : 'border-[#2a2a3a] text-[#606078]'}`}>
+                                                <span className="text-xl mr-2">{d.icon}</span>
+                                                <span className="text-xs font-mono">{d.name}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            {step === 4 && (
+                                <div className="text-center space-y-4 py-6">
+                                    <div className="text-4xl">⚡</div>
+                                    <div className="font-mono text-sm text-[#e8e8f0]">
+                                        CHARACTER SUMMARY
+                                    </div>
+                                    <div className="space-y-1 font-mono text-xs text-[#a0a0b8]">
+                                        <div>Name: <span className="text-[#e8e8f0]">{name}</span></div>
+                                        <div>Mission: <span className="text-[#e8e8f0]">{mission || 'Become stronger'}</span></div>
+                                        <div>Domains: <span className="text-[#e8e8f0]">{selectedDomains.length}</span></div>
+                                        <div>Level: <span className="text-[#e8e8f0]">1</span></div>
+                                        <div>Rank: <span className="text-[#e8e8f0]">E</span></div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <button onClick={handleNext} disabled={step === 1 && !name.trim()}
+                            className="btn-primary w-full">
+                            {step === 4 ? 'INITIALIZE SYSTEM' : step === 0 ? 'BEGIN' : 'NEXT'}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // ─── LEVEL UP MODAL ────────────────────────────────────────────────
+        function LevelUpModal({ state, dispatch, onClose }) {
+            const info = state.lastLevelUp;
+            if (!info) return null;
+            return (
+                <Modal onClose={onClose} title="LEVEL UP" icon="⬆️">
+                    <div className="text-center space-y-4 py-4">
+                        <div className="text-5xl font-bold text-gradient-gold font-mono">
+                            {info.from} → {info.to}
+                        </div>
+                        <div className="font-mono text-sm text-[#a0a0b8]">
+                            Character power increased.
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 font-mono text-xs">
+                            <div className="p-3 rounded-lg bg-[#4a80f015] border border-[#4a80f040]">
+                                <div className="text-[#4a80f0]">+1</div>
+                                <div className="text-[#606078]">ATTR PT</div>
+                            </div>
+                            <div className="p-3 rounded-lg bg-[#7c5cf015] border border-[#7c5cf040]">
+                                <div className="text-[#7c5cf0]">+1</div>
+                                <div className="text-[#606078]">SKILL PT</div>
+                            </div>
+                            <div className="p-3 rounded-lg bg-[#e0b04015] border border-[#e0b04040]">
+                                <div className="text-[#e0b040]">+100</div>
+                                <div className="text-[#606078]">BONUS XP</div>
+                            </div>
+                        </div>
+                    </div>
+                </Modal>
+            );
+        }
+
+        // ─── RANK UP MODAL ─────────────────────────────────────────────────
+        function RankUpModal({ state, dispatch, onClose }) {
+            const info = state.lastRankUp;
+            if (!info) return null;
+            const newColor = getRankColor(info.to, state.ranks);
+            return (
+                <Modal onClose={onClose} title="SYSTEM ALERT" icon="🚨">
+                    <div className="text-center space-y-4 py-4">
+                        <div className="font-mono text-xs tracking-[0.3em] text-[#e05050]">
+                            HIGH-PRIORITY ACHIEVEMENT DETECTED
+                        </div>
+                        <div className="text-4xl font-bold font-mono">
+                            <span style={{ color: getRankColor(info.from, state.ranks) }}>{info.from}</span>
+                            <span className="mx-2 text-[#606078]">→</span>
+                            <span style={{ color: newColor, textShadow: `0 0 20px ${newColor}` }}>{info.to}</span>
+                        </div>
+                        <div className="font-mono text-sm text-[#a0a0b8]">
+                            RANK PROMOTION
+                        </div>
+                        <div className="font-mono text-xs text-[#e0b040]">
+                            New privileges unlocked. Keep ascending.
+                        </div>
+                    </div>
+                </Modal>
+            );
+        }
+
+        // ─── HOME DASHBOARD ────────────────────────────────────────────────
+        function HomeDashboard({ state, dispatch }) {
+            const xpNeeded = getXpForNextLevel(state.level, state.settings.baseXp, state.settings.growthFactor);
+            const xpProgress = state.currentXp / xpNeeded;
+            const rankColor = getRankColor(state.rank, state.ranks);
+            const totalTodayQuests = state.quests.filter(q => q.type === 'daily').length;
+            const completedTodayQuests = state.quests.filter(q => q.type === 'daily' && q.completed).length;
+            const dailyPct = totalTodayQuests > 0 ? (completedTodayQuests / totalTodayQuests) * 100 : 0;
+
+            const recommendedQuest = state.quests
+                .filter(q => !q.completed && q.type === 'daily')
+                .sort((a, b) => (b.xpReward || 0) - (a.xpReward || 0))[0];
+
+            return (
+                <div className="space-y-4">
+                    {/* Greeting */}
+                    <div className="glass-panel p-5">
+                        <div className="font-mono text-xs tracking-[0.2em] text-[#4a80f0]">
+                            {new Date().getHours() < 12 ? 'GOOD MORNING' : new Date().getHours() < 18 ? 'GOOD AFTERNOON' : 'GOOD EVENING'}, PLAYER.
+                        </div>
+                        <div className="mt-1 text-2xl font-bold text-[#e8e8f0]">
+                            {state.playerName || 'UNKNOWN'}
+                        </div>
+                        {state.mission && (
+                            <div className="mt-1 font-mono text-xs text-[#606078] italic">
+                                "{state.mission}"
+                            </div>
+                        )}
+                    </div>
+
+                    {/* SYSTEM STATUS */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        <SystemWindow title="LEVEL" icon="📊">
+                            <div className="text-center">
+                                <div className="text-4xl font-bold font-mono text-[#e8e8f0]">{state.level}</div>
+                                <div className="text-[10px] font-mono text-[#606078]">CURRENT</div>
+                            </div>
+                        </SystemWindow>
+                        <SystemWindow title="RANK" icon="🏅">
+                            <div className="flex items-center justify-center">
+                                <RankBadge rank={state.rank} colors={state.ranks} size={48} />
+                            </div>
+                            <div className="text-center text-[10px] font-mono text-[#606078] mt-1">RANK {state.rank}</div>
+                        </SystemWindow>
+                        <SystemWindow title="XP" icon="💎">
+                            <div className="text-center">
+                                <div className="text-2xl font-bold font-mono text-[#4a80f0]">
+                                    {state.currentXp.toLocaleString()}<span className="text-xs text-[#606078]">/{xpNeeded.toLocaleString()}</span>
+                                </div>
+                                <ProgressBar value={state.currentXp} max={xpNeeded} color="#4a80f0" height={4} />
+                                <div className="text-[10px] font-mono text-[#606078] mt-1">
+                                    {Math.max(0, xpNeeded - state.currentXp).toLocaleString()} XP to Level {state.level + 1}
+                                </div>
+                            </div>
+                        </SystemWindow>
+                        <SystemWindow title="STREAK" icon="🔥">
+                            <div className="text-center">
+                                <div className="text-2xl font-bold font-mono text-[#e0b040]">{state.streak}</div>
+                                <div className="text-[10px] font-mono text-[#606078]">DAYS</div>
+                                <div className="text-[10px] font-mono text-[#606078]">BEST: {state.bestStreak}</div>
+                            </div>
+                        </SystemWindow>
+                    </div>
+
+                    {/* Daily Overview */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <SystemWindow title="TODAY'S QUESTS" icon="📋">
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="font-mono text-xs text-[#a0a0b8]">COMPLETION</span>
+                                    <span className="font-mono text-xs text-[#e8e8f0]">{completedTodayQuests}/{totalTodayQuests}</span>
+                                </div>
+                                <ProgressBar value={completedTodayQuests} max={totalTodayQuests} color="#40c070" height={6} showLabel />
+                                {recommendedQuest && (
+                                    <div className="mt-3 p-3 rounded-lg bg-[#4a80f010] border border-[#4a80f030]">
+                                        <div className="font-mono text-[10px] text-[#4a80f0] tracking-wider">SYSTEM RECOMMENDATION</div>
+                                        <div className="text-sm font-medium text-[#e8e8f0] mt-1">{recommendedQuest.title}</div>
+                                        <div className="font-mono text-xs text-[#e0b040]">+{recommendedQuest.xpReward} XP</div>
+                                    </div>
+                                )}
+                            </div>
+                        </SystemWindow>
+                        <SystemWindow title="DAILY SCORE" icon="📊">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <div className="text-3xl font-bold font-mono" style={{ color: state.dailyGrade === 'S' ? '#e0b040' : state.dailyGrade === 'A' ? '#40c070' : state.dailyGrade === 'B' ? '#4ac8f0' : '#a0a0b8' }}>
+                                        {state.dailyGrade}
+                                    </div>
+                                    <div className="text-[10px] font-mono text-[#606078]">SCORE: {state.dailyScore}/100</div>
+                                    {state.yesterdayGrade && (
+                                        <div className="text-[10px] font-mono text-[#606078]">Yesterday: {state.yesterdayGrade}</div>
+                                    )}
+                                </div>
+                                <CircularProgress value={state.dailyScore} max={100} size={60} color="#40c070" label={state.dailyScore} />
+                            </div>
+                        </SystemWindow>
+                    </div>
+
+                    {/* XP Progress */}
+                    <SystemWindow title="LEVEL PROGRESS" icon="📈">
+                        <div className="flex items-center gap-3">
+                            <div className="font-mono text-sm text-[#606078]">Lv.{state.level}</div>
+                            <ProgressBar value={state.currentXp} max={xpNeeded} color="linear-gradient(90deg, #4a80f0, #7c5cf0)" height={8} />
+                            <div className="font-mono text-sm text-[#606078]">Lv.{state.level + 1}</div>
+                        </div>
+                        <div className="mt-2 text-center font-mono text-xs text-[#e0b040]">
+                            {Math.max(0, xpNeeded - state.currentXp).toLocaleString()} XP required for Level {state.level + 1}
+                        </div>
+                    </SystemWindow>
+
+                    {/* Stat overview */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {state.attributes.filter(a => a.enabled !== false).slice(0, 8).map(attr => (
+                            <div key={attr.id} className="glass-panel p-3 text-center">
+                                <div className="text-xl">{attr.icon}</div>
+                                <div className="font-mono text-xs text-[#a0a0b8]">{attr.name}</div>
+                                <div className="text-lg font-bold font-mono text-[#e8e8f0]">{attr.value}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="flex flex-wrap gap-2">
+                        <button className="btn-primary" onClick={() => dispatch({ type: 'SET_TAB', payload: 'quests' })}>
+                            ⚔️ VIEW QUESTS
+                        </button>
+                        <button className="btn-secondary" onClick={() => dispatch({ type: 'SET_TAB', payload: 'focus' })}>
+                            🎯 FOCUS SESSION
+                        </button>
+                        <button className="btn-secondary" onClick={() => dispatch({ type: 'SET_TAB', payload: 'bosses' })}>
+                            😈 BOSSES
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // ─── CHARACTER PAGE ────────────────────────────────────────────────
+        function CharacterPage({ state, dispatch }) {
+            const [allocating, setAllocating] = useState(null);
+            const [allocAmount, setAllocAmount] = useState(1);
+
+            const enabledAttrs = state.attributes.filter(a => a.enabled !== false);
+            const maxAttrValue = Math.max(...enabledAttrs.map(a => a.value), 1);
+
+            const handleAllocate = (attrId) => {
+                if (state.attributePoints > 0 && allocAmount > 0) {
+                    dispatch({ type: 'ALLOCATE_ATTRIBUTE', payload: { attrId, points: Math.min(allocAmount, state.attributePoints) } });
+                }
+            };
+
+            return (
+                <div className="space-y-4">
+                    {/* Character Header */}
+                    <div className="glass-panel p-6 text-center">
+                        <div className="flex justify-center mb-3">
+                            <RankBadge rank={state.rank} colors={state.ranks} size={64} />
+                        </div>
+                        <div className="text-2xl font-bold font-mono text-[#e8e8f0]">{state.playerName}</div>
+                        <div className="font-mono text-xs text-[#a0a0b8] mt-1">
+                            LEVEL {state.level} — {state.rank} RANK
+                        </div>
+                        <div className="font-mono text-sm mt-2 text-gradient-gold font-bold">
+                            {state.equippedTitle.toUpperCase()}
+                        </div>
+                        {state.mission && (
+                            <div className="font-mono text-xs text-[#606078] mt-2 italic">"{state.mission}"</div>
+                        )}
+                        <div className="flex justify-center gap-4 mt-3 font-mono text-xs text-[#a0a0b8]">
+                            <span>XP: <span className="text-[#e8e8f0]">{state.totalXp.toLocaleString()}</span></span>
+                            <span>STREAK: <span className="text-[#e8e8f0]">{state.streak}</span></span>
+                            <span>QUESTS: <span className="text-[#e8e8f0]">{state.totalQuestsCompleted}</span></span>
+                        </div>
+                    </div>
+
+                    {/* Attributes */}
+                    <SystemWindow title="ATTRIBUTES" icon="📊">
+                        {state.attributePoints > 0 && (
+                            <div className="mb-3 p-3 rounded-lg bg-[#e0b04010] border border-[#e0b04040]">
+                                <div className="font-mono text-xs text-[#e0b040]">
+                                    {state.attributePoints} ATTRIBUTE POINTS AVAILABLE
+                                </div>
+                            </div>
+                        )}
+                        <div className="space-y-2">
+                            {enabledAttrs.map(attr => (
+                                <div key={attr.id} className="flex items-center gap-3 py-1">
+                                    <span className="text-xl w-8 text-center">{attr.icon}</span>
+                                    <div className="flex-1">
+                                        <div className="flex justify-between font-mono text-xs">
+                                            <span className="text-[#a0a0b8]">{attr.name}</span>
+                                            <span className="text-[#e8e8f0] font-bold">{attr.value}</span>
+                                        </div>
+                                        <ProgressBar value={attr.value} max={Math.max(100, maxAttrValue * 1.2)} color="#7c5cf0" height={4} />
+                                    </div>
+                                    {state.attributePoints > 0 && (
+                                        <button onClick={() => handleAllocate(attr.id)}
+                                            className="btn-secondary text-xs px-3 py-1">
+                                            +
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        {state.attributePoints > 0 && (
+                            <div className="flex gap-2 mt-3">
+                                <input type="number" value={allocAmount} onChange={e => setAllocAmount(Math.max(1, parseInt(e.target.value) || 1))}
+                                    min="1" max={state.attributePoints} className="text-sm" style={{ width: '80px' }} />
+                                <span className="font-mono text-xs text-[#606078] self-center">points per click</span>
+                            </div>
+                        )}
+                    </SystemWindow>
+
+                    {/* Titles */}
+                    <SystemWindow title="TITLES" icon="👑">
+                        <div className="grid grid-cols-2 gap-2">
+                            {state.titles.map(t => (
+                                <button key={t.id}
+                                    onClick={() => t.unlocked && dispatch({ type: 'EQUIP_TITLE', payload: t.name })}
+                                    className={`p-3 rounded-lg border text-left transition-all ${state.equippedTitle === t.name ? 'border-[#e0b040] bg-[#e0b04015]' : t.unlocked ? 'border-[#4a80f050] bg-[#4a80f010] hover:bg-[#4a80f020]' : 'border-[#2a2a3a] opacity-50'}`}>
+                                    <div className="font-mono text-xs text-[#e8e8f0]">{t.name}</div>
+                                    <div className="text-[10px] text-[#606078]">{t.unlocked ? t.description : '🔒 Locked'}</div>
+                                </button>
+                            ))}
+                        </div>
+                    </SystemWindow>
+                </div>
+            );
+        }
+
+        // ─── QUESTS PAGE ───────────────────────────────────────────────────
+        function QuestsPage({ state, dispatch }) {
+            const [showAddQuest, setShowAddQuest] = useState(false);
+            const [newQuest, setNewQuest] = useState({
+                title: '',
+                type: 'daily',
+                difficulty: 'normal',
+                xpReward: 25,
+                attributeRewards: [],
+                domain: 'discipline',
+            });
+
+            const questTypes = ['daily', 'weekly', 'monthly', 'main', 'side', 'boss', 'emergency'];
+            const difficulties = ['trivial', 'easy', 'normal', 'hard', 'elite', 'boss'];
+
+            const activeQuests = state.quests.filter(q => !q.completed);
+            const completedQuests = state.quests.filter(q => q.completed);
+
+            const handleComplete = (questId) => {
+                dispatch({ type: 'COMPLETE_QUEST', payload: questId });
+                dispatch({ type: 'CHECK_ACHIEVEMENTS' });
+            };
+
+            const handleAddQuest = () => {
+                if (!newQuest.title.trim()) return;
+                const quest = {
+                    id: 'q' + Date.now(),
+                    ...newQuest,
+                    completed: false,
+                    streak: 0,
+                    bestStreak: 0,
+                    deadline: 'today',
+                    createdAt: Date.now(),
+                };
+                dispatch({ type: 'ADD_QUEST', payload: quest });
+                setShowAddQuest(false);
+                setNewQuest({ ...newQuest, title: '' });
+                dispatch({ type: 'ADD_LOG_ENTRY', payload: `New quest created: ${quest.title}` });
+            };
+
+            return (
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                        <div className="font-mono text-sm text-[#a0a0b8]">
+                            {activeQuests.length} ACTIVE • {completedQuests.length} COMPLETED
+                        </div>
+                        <button className="btn-primary" onClick={() => setShowAddQuest(!showAddQuest)}>
+                            + NEW QUEST
+                        </button>
+                    </div>
+
+                    {showAddQuest && (
+                        <div className="glass-panel p-4 space-y-3">
+                            <div className="font-mono text-xs text-[#4a80f0] tracking-wider">CREATE QUEST</div>
+                            <input type="text" value={newQuest.title} onChange={e => setNewQuest({ ...newQuest, title: e.target.value })}
+                                placeholder="Quest title..." autoFocus />
+                            <div className="grid grid-cols-2 gap-2">
+                                <select value={newQuest.type} onChange={e => setNewQuest({ ...newQuest, type: e.target.value })}>
+                                    {questTypes.map(t => <option key={t} value={t}>{t.toUpperCase()}</option>)}
+                                </select>
+                                <select value={newQuest.difficulty} onChange={e => setNewQuest({ ...newQuest, difficulty: e.target.value })}>
+                                    {difficulties.map(d => <option key={d} value={d}>{d.toUpperCase()}</option>)}
+                                </select>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label className="font-mono text-[10px] text-[#606078]">XP REWARD</label>
+                                    <input type="number" value={newQuest.xpReward}
+                                        onChange={e => setNewQuest({ ...newQuest, xpReward: parseInt(e.target.value) || 0 })} min="1" />
+                                </div>
+                                <div>
+                                    <label className="font-mono text-[10px] text-[#606078]">DOMAIN</label>
+                                    <select value={newQuest.domain} onChange={e => setNewQuest({ ...newQuest, domain: e.target.value })}>
+                                        {state.domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="font-mono text-[10px] text-[#606078]">ATTRIBUTE REWARDS (comma separated: attributeKey:amount)</label>
+                                <input type="text" placeholder="focus:10, discipline:5"
+                                    onChange={e => {
+                                        const rewards = e.target.value.split(',').map(s => s.trim()).filter(Boolean).map(s => {
+                                            const [key, amount] = s.split(':').map(x => x.trim());
+                                            return { key, amount: parseInt(amount) || 0 };
+                                        });
+                                        setNewQuest({ ...newQuest, attributeRewards: rewards });
+                                    }} />
+                            </div>
+                            <button className="btn-primary w-full" onClick={handleAddQuest}>
+                                CREATE
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Active Quests */}
+                    <div className="space-y-2">
+                        {activeQuests.map(quest => (
+                            <div key={quest.id} className="glass-panel p-3 flex items-center gap-3">
+                                <button onClick={() => handleComplete(quest.id)}
+                                    className="w-6 h-6 rounded-full border-2 border-[#4a80f0] flex items-center justify-center text-xs hover:bg-[#4a80f020] transition-all shrink-0">
+                                    {quest.completed ? '✓' : ''}
+                                </button>
+                                <div className="flex-1">
+                                    <div className="font-medium text-sm text-[#e8e8f0]">{quest.title}</div>
+                                    <div className="flex gap-2 font-mono text-[10px] text-[#606078] mt-1">
+                                        <span style={{ color: getDifficultyColor(quest.difficulty) }}>{getDifficultyLabel(quest.difficulty)}</span>
+                                        <span>+{quest.xpReward} XP</span>
+                                        {quest.attributeRewards?.map((ar, i) => (
+                                            <span key={i}>+{ar.amount} {ar.key}</span>
+                                        ))}
+                                        <span>{quest.type.toUpperCase()}</span>
+                                    </div>
+                                </div>
+                                <button onClick={() => dispatch({ type: 'REMOVE_QUEST', payload: quest.id })}
+                                    className="text-[#606078] hover:text-[#e05050] text-sm">×</button>
+                            </div>
+                        ))}
+                        {activeQuests.length === 0 && (
+                            <div className="text-center py-6 font-mono text-xs text-[#606078]">
+                                No active quests. Create new ones to begin.
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Completed Today */}
+                    {completedQuests.length > 0 && (
+                        <SystemWindow title="COMPLETED" icon="✅">
+                            <div className="space-y-1">
+                                {completedQuests.slice(-5).reverse().map(quest => (
+                                    <div key={quest.id} className="flex items-center gap-2 font-mono text-xs text-[#606078]">
+                                        <span className="text-[#40c070]">✓</span>
+                                        <span className="line-through">{quest.title}</span>
+                                        <span className="text-[#4a80f0]">+{quest.xpReward} XP</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </SystemWindow>
+                    )}
+                </div>
+            );
+        }
+
+        // ─── BOSSES PAGE ───────────────────────────────────────────────────
+        function BossesPage({ state, dispatch }) {
+            const [showAddBoss, setShowAddBoss] = useState(false);
+            const [newBoss, setNewBoss] = useState({ name: '', description: '', weakness: '', icon: '😈', hp: 100 });
+
+            const handleDamage = (bossId, damage) => {
+                dispatch({ type: 'DEFEAT_BOSS_PROGRESS', payload: { bossId, damage } });
+                dispatch({ type: 'CHECK_ACHIEVEMENTS' });
+            };
+
+            const handleAddBoss = () => {
+                if (!newBoss.name.trim()) return;
+                const boss = {
+                    id: 'boss' + Date.now(),
+                    ...newBoss,
+                    hp: newBoss.hp || 100,
+                    maxHp: newBoss.hp || 100,
+                    defeated: false,
+                    totalDefeats: 0,
+                };
+                dispatch({ type: 'ADD_QUEST', payload: { id: 'bossQuest' + Date.now(), type: 'boss', title: newBoss.weakness || newBoss.name, difficulty: 'boss', xpReward: 100, attributeRewards: [{ key: 'discipline', amount: 10 }], domain: 'discipline', completed: false, streak: 0, bestStreak: 0, deadline: 'today', createdAt: Date.now() } });
+                setShowAddBoss(false);
+                setNewBoss({ name: '', description: '', weakness: '', icon: '😈', hp: 100 });
+            };
+
+            const damageOptions = [10, 25, 50, 100];
+
+            return (
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                        <div className="font-mono text-sm text-[#a0a0b8]">
+                            {state.bosses.filter(b => !b.defeated).length} ACTIVE BOSSES
+                        </div>
+                        <button className="btn-primary" onClick={() => setShowAddBoss(!showAddBoss)}>
+                            + NEW BOSS
+                        </button>
+                    </div>
+
+                    {showAddBoss && (
+                        <div className="glass-panel p-4 space-y-3">
+                            <div className="font-mono text-xs text-[#e05050] tracking-wider">DEFINE PERSONAL BOSS</div>
+                            <input type="text" value={newBoss.name} onChange={e => setNewBoss({ ...newBoss, name: e.target.value })}
+                                placeholder="Boss name (e.g., THE PROCRASTINATOR)" autoFocus />
+                            <input type="text" value={newBoss.description} onChange={e => setNewBoss({ ...newBoss, description: e.target.value })}
+                                placeholder="Description (e.g., Avoiding difficult tasks)" />
+                            <input type="text" value={newBoss.weakness} onChange={e => setNewBoss({ ...newBoss, weakness: e.target.value })}
+                                placeholder="Weakness / counter action" />
+                            <input type="number" value={newBoss.hp} onChange={e => setNewBoss({ ...newBoss, hp: parseInt(e.target.value) || 100 })}
+                                placeholder="HP (default: 100)" min="10" max="1000" />
+                            <button className="btn-primary w-full" onClick={handleAddBoss}>CREATE BOSS</button>
+                        </div>
+                    )}
+
+                    {/* Boss Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {state.bosses.map(boss => (
+                            <div key={boss.id} className={`glass-panel p-4 ${boss.defeated ? 'opacity-50' : ''}`}>
+                                <div className="flex items-center gap-3 mb-3">
+                                    <span className="text-3xl">{boss.icon}</span>
+                                    <div className="flex-1">
+                                        <div className="font-mono text-sm font-bold text-[#e8e8f0]">{boss.name}</div>
+                                        <div className="text-xs text-[#606078]">{boss.description}</div>
+                                    </div>
+                                    {boss.defeated ? (
+                                        <span className="font-mono text-xs text-[#40c070]">DEFEATED ×{boss.totalDefeats}</span>
+                                    ) : (
+                                        <span className="font-mono text-xs text-[#e05050]">HP {boss.hp}/{boss.maxHp}</span>
+                                    )}
+                                </div>
+                                <ProgressBar value={boss.hp} max={boss.maxHp} color="#e05050" height={8} showLabel />
+                                {!boss.defeated && (
+                                    <div className="mt-3">
+                                        <div className="font-mono text-[10px] text-[#606078] mb-2">COUNTER: "{boss.weakness}"</div>
+                                        <div className="flex gap-2">
+                                            {damageOptions.map(dmg => (
+                                                <button key={dmg} onClick={() => handleDamage(boss.id, dmg)}
+                                                    className="btn-secondary text-xs px-3 py-1.5" disabled={boss.hp <= 0}>
+                                                    -{dmg} HP
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                        {state.bosses.length === 0 && (
+                            <div className="text-center py-6 font-mono text-xs text-[#606078]">
+                                No bosses defined. Identify your weaknesses and defeat them.
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // ─── FOCUS PAGE ────────────────────────────────────────────────────
+        function FocusPage({ state, dispatch }) {
+            const [isRunning, setIsRunning] = useState(false);
+            const [mode, setMode] = useState(25);
+            const [customMinutes, setCustomMinutes] = useState(50);
+            const [timeLeft, setTimeLeft] = useState(25 * 60);
+            const [totalSeconds, setTotalSeconds] = useState(25 * 60);
+            const timerRef = useRef(null);
+
+            const modes = [
+                { label: '25 MIN', minutes: 25 },
+                { label: '50 MIN', minutes: 50 },
+                { label: '90 MIN', minutes: 90 },
+                { label: 'CUSTOM', minutes: null },
+            ];
+
+            useEffect(() => {
+                if (isRunning && timeLeft > 0) {
+                    timerRef.current = setInterval(() => {
+                        setTimeLeft(prev => {
+                            if (prev <= 1) {
+                                clearInterval(timerRef.current);
+                                setIsRunning(false);
+                                handleSessionComplete();
+                                return 0;
+                            }
+                            return prev - 1;
+                        });
+                    }, 1000);
+                } else if (timeLeft === 0) {
+                    setIsRunning(false);
+                }
+                return () => clearInterval(timerRef.current);
+            }, [isRunning]);
+
+            const handleSessionComplete = () => {
+                const minutes = Math.round(totalSeconds / 60);
+                const xpEarned = Math.round(minutes * 0.8);
+                const focusGained = Math.round(minutes * 0.15);
+                const disciplineGained = Math.round(minutes * 0.08);
+                dispatch({
+                    type: 'ADD_FOCUS_SESSION',
+                    payload: { duration: minutes, xpEarned, focusGained, disciplineGained }
+                });
+                dispatch({ type: 'CHECK_ACHIEVEMENTS' });
+                setTimeLeft(totalSeconds);
+            };
+
+            const startTimer = () => {
+                const mins = mode === 'CUSTOM' ? customMinutes : mode;
+                if (!mins || mins <= 0) return;
+                const seconds = mins * 60;
+                setTotalSeconds(seconds);
+                setTimeLeft(seconds);
+                setIsRunning(true);
+            };
+
+            const stopTimer = () => {
+                clearInterval(timerRef.current);
+                setIsRunning(false);
+            };
+
+            const resetTimer = () => {
+                clearInterval(timerRef.current);
+                setIsRunning(false);
+                const mins = mode === 'CUSTOM' ? customMinutes : mode;
+                setTimeLeft((mins || 25) * 60);
+                setTotalSeconds((mins || 25) * 60);
+            };
+
+            const formatTime = (seconds) => {
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            };
+
+            const pct = totalSeconds > 0 ? ((totalSeconds - timeLeft) / totalSeconds) * 100 : 0;
+
+            return (
+                <div className="space-y-4">
+                    <div className="glass-panel p-6 text-center">
+                        <div className="font-mono text-sm text-[#606078] tracking-wider mb-4">FOCUS SESSION</div>
+                        <div className="text-6xl font-bold font-mono text-[#e8e8f0] mb-2">
+                            {formatTime(timeLeft)}
+                        </div>
+                        <ProgressBar value={totalSeconds - timeLeft} max={totalSeconds} color="#4ac8f0" height={6} />
+                        <div className="font-mono text-xs text-[#606078] mt-2">
+                            {isRunning ? 'IN PROGRESS' : timeLeft === 0 ? 'COMPLETE!' : 'READY'}
+                        </div>
+
+                        {/* Mode selection */}
+                        <div className="flex justify-center gap-2 mt-4 mb-4 flex-wrap">
+                            {modes.map(m => (
+                                <button key={m.label} onClick={() => { setMode(m.minutes); if (!isRunning) resetTimer(); }}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-mono border transition-all ${mode === m.minutes ? 'border-[#4ac8f0] bg-[#4ac8f015] text-[#4ac8f0]' : 'border-[#2a2a3a] text-[#606078]'}`}>
+                                    {m.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {mode === 'CUSTOM' && (
+                            <div className="mb-4">
+                                <input type="number" value={customMinutes} onChange={e => setCustomMinutes(parseInt(e.target.value) || 50)}
+                                    min="5" max="180" className="text-center" style={{ width: '120px' }} />
+                                <span className="font-mono text-xs text-[#606078] ml-2">minutes</span>
+                            </div>
+                        )}
+
+                        <div className="flex gap-2 justify-center">
+                            {!isRunning ? (
+                                <button className="btn-primary" onClick={startTimer}>▶ START</button>
+                            ) : (
+                                <button className="btn-danger" onClick={stopTimer}>⏹ STOP</button>
+                            )}
+                            <button className="btn-secondary" onClick={resetTimer}>⟲ RESET</button>
+                        </div>
+                    </div>
+
+                    {/* Recent sessions */}
+                    {state.focusSessions.length > 0 && (
+                        <SystemWindow title="SESSION HISTORY" icon="📊">
+                            <div className="space-y-1">
+                                {state.focusSessions.slice(-10).reverse().map(s => (
+                                    <div key={s.id} className="flex justify-between font-mono text-xs text-[#606078]">
+                                        <span>{new Date(s.timestamp).toLocaleDateString()} — {s.duration} min</span>
+                                        <span className="text-[#4ac8f0]">+{s.xpEarned} XP</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </SystemWindow>
+                    )}
+                </div>
+            );
+        }
+
+        // ─── SKILLS PAGE ───────────────────────────────────────────────────
+        function SkillsPage({ state, dispatch }) {
+            const trees = ['discipline', 'knowledge', 'physical'];
+            const treeNames = { discipline: 'DISCIPLINE TREE', knowledge: 'KNOWLEDGE TREE', physical: 'PHYSICAL TREE' };
+            const treeIcons = { discipline: '⚡', knowledge: '📖', physical: '💪' };
+            const treeColors = { discipline: '#7c5cf0', knowledge: '#4ac8f0', physical: '#e08040' };
+
+            const handleUnlock = (skillId) => {
+                if (state.skillPoints > 0) {
+                    dispatch({ type: 'UNLOCK_SKILL', payload: skillId });
+                }
+            };
+
+            return (
+                <div className="space-y-4">
+                    <div className="glass-panel p-4 text-center">
+                        <div className="font-mono text-sm text-[#a0a0b8]">SKILL POINTS AVAILABLE</div>
+                        <div className="text-3xl font-bold font-mono text-[#e0b040]">{state.skillPoints}</div>
+                    </div>
+
+                    {trees.map(tree => {
+                        const treeSkills = state.skillTree.filter(s => s.tree === tree).sort((a, b) => a.tier - b.tier);
+                        const color = treeColors[tree];
+                        return (
+                            <SystemWindow key={tree} title={`${treeIcons[tree]} ${treeNames[tree]}`}>
+                                <div className="flex items-center gap-3 justify-center py-2">
+                                    {treeSkills.map(skill => {
+                                        let status = 'locked';
+                                        if (skill.unlocked) status = 'unlocked';
+                                        else if (state.skillPoints > 0 && (!skill.prereq || state.skillTree.find(s => s.id === skill.prereq)?.unlocked)) status = 'available';
+
+                                        return (
+                                            <div key={skill.id} className="flex flex-col items-center gap-1">
+                                                <div className={`skill-node ${status}`} style={{ borderColor: status === 'unlocked' ? '#e0b040' : status === 'available' ? color : '#3a3a4a', background: status === 'unlocked' ? 'rgba(224,176,64,0.15)' : status === 'available' ? `${color}20` : 'rgba(30,30,40,0.5)', color: status === 'unlocked' ? '#e0b040' : status === 'available' ? color : '#606078' }}
+                                                    onClick={() => handleUnlock(skill.id)}>
+                                                    {status === 'unlocked' ? '✓' : skill.tier}
+                                                </div>
+                                                <div className="font-mono text-[8px] text-center max-w-[60px]" style={{ color: status === 'unlocked' ? '#e0b040' : '#606078' }}>
+                                                    {skill.name}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <div className="font-mono text-[10px] text-[#606078] text-center mt-2">
+                                    {treeSkills.filter(s => s.unlocked).length}/{treeSkills.length} UNLOCKED
+                                </div>
+                            </SystemWindow>
+                        );
+                    })}
+                </div>
+            );
+        }
+
+        // ─── ANALYTICS PAGE ────────────────────────────────────────────────
+        function AnalyticsPage({ state, dispatch }) {
+            const [timeRange, setTimeRange] = useState('week');
+
+            const xpData = useMemo(() => {
+                const transactions = state.xpTransactions;
+                if (transactions.length === 0) return [];
+                const sorted = [...transactions].sort((a, b) => a.timestamp - b.timestamp);
+                const groups = {};
+                sorted.forEach(tx => {
+                    const date = new Date(tx.timestamp);
+                    const key = timeRange === 'week' ? date.toLocaleDateString() : date.toLocaleDateString();
+                    groups[key] = (groups[key] || 0) + tx.xpGained;
+                });
+                return Object.entries(groups).map(([date, xp]) => ({ date: date.slice(0, 5), xp }));
+            }, [state.xpTransactions, timeRange]);
+
+            const attrData = useMemo(() => {
+                return state.attributes.filter(a => a.enabled !== false).map(a => ({ name: a.name, value: a.value }));
+            }, [state.attributes]);
+
+            const domainData = useMemo(() => {
+                const domains = {};
+                state.domains.forEach(d => domains[d.name] = 0);
+                state.quests.filter(q => q.completed).forEach(q => {
+                    const domain = state.domains.find(d => d.id === q.domain);
+                    if (domain) domains[domain.name] = (domains[domain.name] || 0) + 1;
+                });
+                return Object.entries(domains).map(([name, value]) => ({ name, value }));
+            }, [state.quests, state.domains]);
+
+            const COLORS = ['#4a80f0', '#4ac8f0', '#40c070', '#e0b040', '#e08040', '#e05080', '#7c5cf0'];
+
+            return (
+                <div className="space-y-4">
+                    <div className="flex gap-2">
+                        {['week', 'month'].map(t => (
+                            <button key={t} onClick={() => setTimeRange(t)}
+                                className={`px-4 py-2 rounded-lg font-mono text-xs border ${timeRange === t ? 'border-[#4a80f0] bg-[#4a80f015] text-[#4a80f0]' : 'border-[#2a2a3a] text-[#606078]'}`}>
+                                {t.toUpperCase()}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <SystemWindow title="XP OVER TIME" icon="📈">
+                            <ResponsiveContainer width="100%" height={180}>
+                                <AreaChart data={xpData}>
+                                    <defs>
+                                        <linearGradient id="xpGrad" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#4a80f0" stopOpacity={0.5}/>
+                                            <stop offset="100%" stopColor="#4a80f0" stopOpacity={0.05}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <XAxis dataKey="date" tick={{ fill: '#606078', fontSize: 10 }} />
+                                    <YAxis tick={{ fill: '#606078', fontSize: 10 }} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#1a1a2a" />
+                                    <Tooltip contentStyle={{ background: '#111118', border: '1px solid #2a2a3a', borderRadius: '8px', color: '#e8e8f0' }} />
+                                    <Area type="monotone" dataKey="xp" stroke="#4a80f0" fill="url(#xpGrad)" strokeWidth={2} />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </SystemWindow>
+
+                        <SystemWindow title="ATTRIBUTE RADAR" icon="🕸️">
+                            <ResponsiveContainer width="100%" height={180}>
+                                <RadarChart data={attrData} outerRadius={70}>
+                                    <PolarGrid stroke="#2a2a3a" />
+                                    <PolarAngleAxis dataKey="name" tick={{ fill: '#a0a0b8', fontSize: 9 }} />
+                                    <PolarRadiusAxis tick={{ fill: '#606078', fontSize: 8 }} stroke="#2a2a3a" />
+                                    <Radar dataKey="value" stroke="#7c5cf0" fill="#7c5cf0" fillOpacity={0.3} />
+                                </RadarChart>
+                            </ResponsiveContainer>
+                        </SystemWindow>
+
+                        <SystemWindow title="DOMAIN ACTIVITY" icon="📊">
+                            <ResponsiveContainer width="100%" height={180}>
+                                <BarChart data={domainData}>
+                                    <XAxis dataKey="name" tick={{ fill: '#606078', fontSize: 9 }} />
+                                    <YAxis tick={{ fill: '#606078', fontSize: 9 }} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#1a1a2a" />
+                                    <Tooltip contentStyle={{ background: '#111118', border: '1px solid #2a2a3a', borderRadius: '8px', color: '#e8e8f0' }} />
+                                    <Bar dataKey="value" fill="#4a80f0" radius={[4, 4, 0, 0]}>
+                                        {domainData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </SystemWindow>
+
+                        <SystemWindow title="SYSTEM ANALYSIS" icon="🧠">
+                            <div className="space-y-3 font-mono text-xs text-[#a0a0b8]">
+                                <div>
+                                    <span className="text-[#4ac8f0]">STRONGEST:</span>{' '}
+                                    {state.attributes.filter(a => a.enabled !== false).sort((a, b) => b.value - a.value)[0]?.name || 'N/A'}
+                                </div>
+                                <div>
+                                    <span className="text-[#e08040]">WEAKEST:</span>{' '}
+                                    {state.attributes.filter(a => a.enabled !== false).sort((a, b) => a.value - b.value)[0]?.name || 'N/A'}
+                                </div>
+                                <div>
+                                    <span className="text-[#e0b040]">TOTAL XP:</span>{' '}
+                                    {state.lifetimeXp.toLocaleString()}
+                                </div>
+                                <div>
+                                    <span className="text-[#40c070]">COMPLETION RATE:</span>{' '}
+                                    {state.totalQuestsCompleted > 0 ? `${Math.round((state.totalQuestsCompleted / (state.totalQuestsCompleted + state.quests.filter(q => !q.completed).length)) * 100)}%` : 'N/A'}
+                                </div>
+                                <div>
+                                    <span className="text-[#7c5cf0]">FOCUS SESSIONS:</span>{' '}
+                                    {state.focusSessions.length}
+                                </div>
+                            </div>
+                        </SystemWindow>
+                    </div>
+                </div>
+            );
+        }
+
+        // ─── ACHIEVEMENTS PAGE ─────────────────────────────────────────────
+        function AchievementsPage({ state, dispatch }) {
+            const unlockedCount = state.achievements.filter(a => a.unlocked).length;
+            return (
+                <div className="space-y-4">
+                    <div className="glass-panel p-4 text-center">
+                        <div className="font-mono text-xs text-[#606078]">ACHIEVEMENTS UNLOCKED</div>
+                        <div className="text-3xl font-bold font-mono text-[#e0b040]">
+                            {unlockedCount}/{state.achievements.length}
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {state.achievements.map(ach => (
+                            <div key={ach.id} className={`glass-panel p-4 ${ach.unlocked ? '' : 'opacity-50'}`}>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-3xl">{ach.unlocked ? ach.icon : '🔒'}</span>
+                                    <div>
+                                        <div className={`font-mono text-sm font-bold ${ach.unlocked ? 'text-[#e0b040]' : 'text-[#606078]'}`}>
+                                            {ach.name}
+                                        </div>
+                                        <div className="text-xs text-[#606078]">{ach.description}</div>
+                                    </div>
+                                </div>
+                                {ach.unlocked && (
+                                    <div className="mt-2 font-mono text-[10px] text-[#40c070]">UNLOCKED ✓</div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        // ─── SYSTEM LOG PAGE ───────────────────────────────────────────────
+        function SystemLogPage({ state }) {
+            return (
+                <div className="space-y-4">
+                    <SystemWindow title="SYSTEM LOG" icon="📋">
+                        <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                            {state.systemLog.map((entry, i) => (
+                                <div key={i} className="font-mono text-xs flex items-start gap-2">
+                                    <span className="text-[#606078] shrink-0">
+                                        [{new Date(entry.timestamp).toLocaleTimeString()}]
+                                    </span>
+                                    <span className="text-[#a0a0b8]">{entry.message}</span>
+                                </div>
+                            ))}
+                            {state.systemLog.length === 0 && (
+                                <div className="text-center py-4 font-mono text-xs text-[#606078]">
+                                    System log empty. Begin your journey.
+                                </div>
+                            )}
+                        </div>
+                    </SystemWindow>
+                </div>
+            );
+        }
+
+        // ─── SETTINGS PAGE ─────────────────────────────────────────────────
+        function SettingsPage({ state, dispatch }) {
+            const [settings, setSettings] = useState(state.settings);
+            const [showReset, setShowReset] = useState(false);
+
+            const handleSave = () => {
+                dispatch({ type: 'UPDATE_SETTINGS', payload: settings });
+                dispatch({ type: 'ADD_LOG_ENTRY', payload: 'Settings updated.' });
+            };
+
+            const handleReset = () => {
+                if (confirm('Are you sure you want to reset ALL data? This cannot be undone.')) {
+                    localStorage.clear();
+                    dispatch({ type: 'RESET_STATE' });
+                }
+            };
+
+            return (
+                <div className="space-y-4">
+                    <SystemWindow title="XP SETTINGS" icon="⚙️">
+                        <div className="space-y-3">
+                            <div>
+                                <label className="font-mono text-xs text-[#a0a0b8]">BASE XP</label>
+                                <input type="number" value={settings.baseXp} onChange={e => setSettings({ ...settings, baseXp: parseInt(e.target.value) || 100 })} min="10" max="500" />
+                            </div>
+                            <div>
+                                <label className="font-mono text-xs text-[#a0a0b8]">GROWTH FACTOR (higher = slower leveling)</label>
+                                <input type="number" value={settings.growthFactor} onChange={e => setSettings({ ...settings, growthFactor: parseFloat(e.target.value) || 1.15 })} min="1.0" max="2.0" step="0.05" />
+                            </div>
+                            <div>
+                                <label className="font-mono text-xs text-[#a0a0b8]">XP MULTIPLIER</label>
+                                <input type="number" value={settings.xpMultiplier} onChange={e => setSettings({ ...settings, xpMultiplier: parseFloat(e.target.value) || 1.0 })} min="0.1" max="5" step="0.1" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <input type="checkbox" checked={settings.comboEnabled} onChange={e => setSettings({ ...settings, comboEnabled: e.target.checked })} />
+                                <label className="font-mono text-xs text-[#a0a0b8]">COMBO BONUS ENABLED</label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <input type="checkbox" checked={settings.flavorText} onChange={e => setSettings({ ...settings, flavorText: e.target.checked })} />
+                                <label className="font-mono text-xs text-[#a0a0b8]">SYSTEM FLAVOR TEXT</label>
+                            </div>
+                            <button className="btn-primary w-full" onClick={handleSave}>SAVE SETTINGS</button>
+                        </div>
+                    </SystemWindow>
+
+                    <SystemWindow title="DANGER ZONE" icon="⚠️">
+                        <button className="btn-danger w-full" onClick={() => setShowReset(true)}>
+                            RESET ALL DATA
+                        </button>
+                        {showReset && (
+                            <div className="mt-3 p-3 rounded-lg bg-[#e0505010] border border-[#e0505040]">
+                                <div className="font-mono text-xs text-[#e05050] mb-2">This will erase all progress. Are you sure?</div>
+                                <div className="flex gap-2">
+                                    <button className="btn-danger flex-1" onClick={handleReset}>CONFIRM RESET</button>
+                                    <button className="btn-secondary flex-1" onClick={() => setShowReset(false)}>CANCEL</button>
+                                </div>
+                            </div>
+                        )}
+                    </SystemWindow>
+                </div>
+            );
+        }
+
+        // ─── MAIN APP ──────────────────────────────────────────────────────
+        function App() {
+            const [state, dispatch] = useReducer(appReducer, initialState);
+            const [loaded, setLoaded] = useState(false);
+
+            // Load from localStorage on mount
+            useEffect(() => {
+                const saved = localStorage.getItem('the_system_state');
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        dispatch({ type: 'LOAD_STATE', payload: parsed });
+                    } catch {}
+                }
+                setLoaded(true);
+            }, []);
+
+            // Save to localStorage on state change
+            useEffect(() => {
+                if (loaded && state.initialized) {
+                    localStorage.setItem('the_system_state', JSON.stringify(state));
+                }
+            }, [state, loaded]);
+
+            // Daily reset check
+            useEffect(() => {
+                if (state.initialized && loaded) {
+                    const today = new Date().toDateString();
+                    if (state.lastDailyReset !== today && state.initialized) {
+                        dispatch({ type: 'DAILY_RESET' });
+                    }
+                }
+            }, [state.initialized, loaded, state.lastDailyReset]);
+
+            // Check achievements periodically
+            useEffect(() => {
+                if (state.initialized && loaded) {
+                    dispatch({ type: 'CHECK_ACHIEVEMENTS' });
+                }
+            }, [state.totalQuestsCompleted, state.level, state.bestStreak, state.totalXp, state.bossesDefeated, state.perfectDays]);
+
+            // Auto-dismiss modals after 5s
+            useEffect(() => {
+                if (state.showLevelUpModal || state.showRankUpModal) {
+                    const timer = setTimeout(() => {
+                        dispatch({ type: 'SET_TAB', payload: state.activeTab });
+                        // Close modals by dispatching a no-op that preserves state
+                    }, 5000);
+                    return () => clearTimeout(timer);
+                }
+            }, [state.showLevelUpModal, state.showRankUpModal]);
+
+            const contextValue = { state, dispatch };
+
+            const navItems = [
+                { id: 'home', label: 'HOME', icon: '🏠' },
+                { id: 'character', label: 'CHARACTER', icon: '👤' },
+                { id: 'quests', label: 'QUESTS', icon: '⚔️' },
+                { id: 'bosses', label: 'BOSSES', icon: '😈' },
+                { id: 'focus', label: 'FOCUS', icon: '🎯' },
+                { id: 'skills', label: 'SKILLS', icon: '🌟' },
+                { id: 'analytics', label: 'ANALYTICS', icon: '📊' },
+                { id: 'achievements', label: 'ACHIEVEMENTS', icon: '🏆' },
+                { id: 'log', label: 'SYSTEM LOG', icon: '📋' },
+                { id: 'settings', label: 'SETTINGS', icon: '⚙️' },
+            ];
+
+            const renderActiveTab = () => {
+                switch (state.activeTab) {
+                    case 'home':
+                        return <HomeDashboard state={state} dispatch={dispatch} />;
+                    case 'character':
+                        return <CharacterPage state={state} dispatch={dispatch} />;
+                    case 'quests':
+                        return <QuestsPage state={state} dispatch={dispatch} />;
+                    case 'bosses':
+                        return <BossesPage state={state} dispatch={dispatch} />;
+                    case 'focus':
+                        return <FocusPage state={state} dispatch={dispatch} />;
+                    case 'skills':
+                        return <SkillsPage state={state} dispatch={dispatch} />;
+                    case 'analytics':
+                        return <AnalyticsPage state={state} dispatch={dispatch} />;
+                    case 'achievements':
+                        return <AchievementsPage state={state} dispatch={dispatch} />;
+                    case 'log':
+                        return <SystemLogPage state={state} />;
+                    case 'settings':
+                        return <SettingsPage state={state} dispatch={dispatch} />;
+                    default:
+                        return <HomeDashboard state={state} dispatch={dispatch} />;
+                }
+            };
+
+            if (!loaded) {
+                return (
+                    <div className="fixed inset-0 flex items-center justify-center bg-[#0a0a0f]">
+                        <div className="font-mono text-xs tracking-[0.3em] text-[#4a80f0] animate-pulse">
+                            SYSTEM INITIALIZING...
+                        </div>
+                    </div>
+                );
+            }
+
+            if (state.showOnboarding && !state.initialized) {
+                return <Onboarding state={state} dispatch={dispatch} />;
+            }
+
+            return (
+                <AppContext.Provider value={contextValue}>
+                    <div className="min-h-screen bg-[#0a0a0f] text-[#e8e8f0]">
+                        {/* Top bar */}
+                        <div className="sticky top-0 z-40 bg-[#0a0a0f]/90 backdrop-blur-lg border-b border-[#1a1a2a]">
+                            <div className="max-w-6xl mx-auto px-3 py-2 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-lg">⚡</span>
+                                    <span className="font-mono text-sm font-bold tracking-wider text-gradient">THE SYSTEM</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="font-mono text-xs text-[#606078]">Lv.{state.level}</span>
+                                    <RankBadge rank={state.rank} colors={state.ranks} size={24} />
+                                    <span className="font-mono text-xs text-[#e0b040]">🔥{state.streak}</span>
+                                    <span className="font-mono text-xs text-[#4a80f0]">💎{state.totalXp.toLocaleString()}</span>
+                                </div>
+                            </div>
+                            {/* Navigation */}
+                            <div className="max-w-6xl mx-auto px-3 pb-2 overflow-x-auto flex gap-1">
+                                {navItems.map(item => (
+                                    <button key={item.id}
+                                        onClick={() => dispatch({ type: 'SET_TAB', payload: item.id })}
+                                        className={`nav-tab ${state.activeTab === item.id ? 'active' : ''}`}>
+                                        <span className="mr-1">{item.icon}</span>
+                                        <span className="hidden sm:inline">{item.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Main content */}
+                        <div className="max-w-6xl mx-auto px-3 py-4">
+                            {renderActiveTab()}
+                        </div>
+
+                        {/* System footer */}
+                        <div className="max-w-6xl mx-auto px-3 pb-6 pt-2 text-center">
+                            <div className="font-mono text-[10px] text-[#30303e] tracking-wider">
+                                SYSTEM ACTIVE — {state.playerName?.toUpperCase() || 'PLAYER'} — PROGRESSION DOCUMENTED
+                            </div>
+                        </div>
+
+                        {/* Level Up Modal */}
+                        {state.showLevelUpModal && state.lastLevelUp && (
+                            <LevelUpModal state={state} dispatch={dispatch}
+                                onClose={() => dispatch({ type: 'LOAD_STATE', payload: { ...state, showLevelUpModal: false, lastLevelUp: null } })} />
+                        )}
+
+                        {/* Rank Up Modal */}
+                        {state.showRankUpModal && state.lastRankUp && (
+                            <RankUpModal state={state} dispatch={dispatch}
+                                onClose={() => dispatch({ type: 'LOAD_STATE', payload: { ...state, showRankUpModal: false, lastRankUp: null } })} />
+                        )}
+                    </div>
+                </AppContext.Provider>
+            );
+        }
+
+        // ─── RENDER ────────────────────────────────────────────────────────
+        ReactDOM.render(<App />, document.getElementById('root'));
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('Service Worker registered'));
+    });
+  }
+</script>
+    </script>
+</body>
+</html>
